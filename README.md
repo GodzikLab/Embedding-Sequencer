@@ -13,7 +13,7 @@ The script takes 3 inputs and has 2 optional flags to be used like so:
 sequencer.py pool.hdf input.fasta output.fasta
 ```
 ```
-sequencer.py -s -p pool.hdf input.fasta output.fasta
+sequencer.py -f -p pool.hdf input.fasta output.fasta
 ```
 
 Included Components:
@@ -31,9 +31,11 @@ In order to cluster the embeddings into letters, the method uses a <ins>clusteri
 
 For example, the hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the alternate sequence. This information is stored as an HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
 
-### The Sequence Flag (-s)
+### The Find Flag (-f)
 
-As mentioned, the script can find locations of interests in the protein sequence using the pattern defined in the HDF file. However, if one wanted to ignore the find function and only output the sequence. You can use the '-s' flag in the command.
+As mentioned, the script can find locations of interests in the protein sequence using the pattern defined in the HDF file. This function is disabled by default and needs the '-f' find flag to be used. 
+
+This modifies the output of the FASTA file with line breaks to reflect where the pattern was found. 
 
 ### The Print Flag (-p)
 
