@@ -17,7 +17,7 @@ sequencer.py -f -p pool.hdf input.fasta output.fasta
 ```
 
 Included Components:
-* requirements.txt - Used for setting up the virtual environment.
+* environment.yaml - Used for setting up the virtual environment.
 
 * HDF file(s) - Used to designate the <ins>clustering pool</ins> in use.
 
