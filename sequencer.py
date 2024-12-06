@@ -117,7 +117,7 @@ def main():
         majority_label = max(label_weights, key = label_weights.get)
         majority_weight = label_weights[majority_label]
         query_sequence += chr(ord('A') + majority_label)
-        if majority_weight < (k * 0.30): # 0.3 is definition of 'bad similarity' for normalized vector comparisons
+        if majority_weight < (num_neighbors * 0.30): # 0.3 is definition of 'bad similarity' for normalized vector comparisons
             outlier_dict[i] = majority_weight
     
     # get outlier percentage
