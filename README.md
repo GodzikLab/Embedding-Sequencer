@@ -21,7 +21,9 @@ Included Components:
 
 * HDF file(s) - Used to designate the <ins>clustering pool</ins> in use.
 
-* sequencer.py script - Self-explanatory.
+* fasta_input & fasta_output folders - For organizational use.
+
+* sequencer.py script
 
 ## Key Components / Explanation
 
