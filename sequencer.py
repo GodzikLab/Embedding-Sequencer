@@ -14,7 +14,7 @@ import argparse
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Process protein sequences and generate FASTA output.")
-    parser.add_argument("-f", "--output_flag", choices=['f', 's'], default='f', help="Choose between 'f' (find) or 's' (sequence)")
+    parser.add_argument("-f", "--output_flag", action='store_const', const='f', default='s', help="Set to 'f' (find) if provided; defaults to 's' (sequence)")
     parser.add_argument("-p", "--print_flag", action="store_true", help="Enable printing of intermediate results")
     parser.add_argument("input_hdf", help="Path to the input HDF file")
     parser.add_argument("input_fasta", help="Path to the input FASTA file")
@@ -132,7 +132,7 @@ def main():
         write_fasta_files(gene_name, query_sequence, [], output_name = args.output_fasta)
         if args.print_flag:
             print(f"Sequence FASTA generated: {args.output_fasta}")
-        exit
+        return
     
     # search through generated query sequence
     if args.print_flag:
