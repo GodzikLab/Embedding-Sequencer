@@ -91,7 +91,7 @@ def main():
     # pull last layer of embeddings and normalize
     with torch.no_grad():
         results = model(batch_tokens, repr_layers=[num_layers])
-        query_embeddings = results["representations"][num_layers][0, 1:].numpy()
+        query_embeddings = results["representations"][num_layers][0, 1:-1].numpy()
         query_embeddings = normalize(query_embeddings)
         query_embeddings = query_embeddings.astype(np.float32)
     if args.print_flag:
