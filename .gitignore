@@ -151,5 +151,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# mac stuff
+# Mac OS stuff
 .DS_store
+
+# output files
+fasta_output/
