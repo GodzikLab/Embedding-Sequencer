@@ -34,7 +34,7 @@ def write_fasta_files(gene_id, sequence, break_indexes, output_name = 'output.fa
     # uses newlines at points of break indexes 
     else:
         with open(output_name, "w") as fasta_file:
-            fasta_file.write(f">{id} \n")
+            fasta_file.write(f">{gene_id} \n")
 
             start = 0
             for idx in break_indexes:
