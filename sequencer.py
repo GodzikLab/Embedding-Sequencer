@@ -78,8 +78,9 @@ def main():
         gene_name = record.id
         sequence = str(record.seq)
     if args.print_flag:
+        print("\nEntered FASTA file:")
         print(f"Gene Name: {gene_name}")
-        print(f"Sequence: {sequence}")
+        print(f"Sequence: {sequence}\n")
 
     # generate embeddings with torch
     model, alphabet = torch.hub.load("facebookresearch/esm:main", "esm2_t12_35M_UR50D")
@@ -94,13 +95,13 @@ def main():
         query_embeddings = normalize(query_embeddings)
         query_embeddings = query_embeddings.astype(np.float32)
     if args.print_flag:
-        print(f"Generated Embeddings for {gene_name}. Shape: {query_embeddings.shape}")
+        print(f"\nGenerated Embeddings for {gene_name}. Shape: {query_embeddings.shape}\n")
 
     # index pool embeddings in FAISS
     faiss_index = faiss.IndexFlatIP(aggregate_embeddings.shape[1])
     faiss_index.add(aggregate_embeddings)
     if args.print_flag:
-        print(f"FAISS index created successfully. Number of vectors: {faiss_index.ntotal}")
+        print(f"FAISS index created successfully. Number of Vectors in Pool: {faiss_index.ntotal}\n")
     
     # perform approximate nearest neighbor matching with faiss
     num_neighbors = 50
@@ -124,7 +125,7 @@ def main():
     outlier_percentage = round((len(outlier_dict) / len(faiss_similarity)) * 100, 3)
     sequence_confidence = round(100 - outlier_percentage, 3)
     if args.print_flag:
-        print(f"Sequence Confidence: {sequence_confidence}")
+        print(f"Sequence Confidence: {sequence_confidence}\n")
 
     # BREAK BASED ON FLAG
     if args.output_flag == 's':
@@ -136,7 +137,7 @@ def main():
     # search through generated query sequence
     if args.print_flag:
         print(f"Pattern: {indicative_pattern}")
-        print(f"Pattern Confidence: {pattern_percentage}")
+        print(f"Pattern Confidence: {pattern_percentage}\n")
     shift = (len(indicative_pattern)) // 2
     # regex search expression to find matches
     pattern_indexes = [match.start() + shift for match in re.finditer(f'(?={indicative_pattern})', query_sequence)]
@@ -144,11 +145,11 @@ def main():
         first_index = [match.start() for match in re.finditer(f'(?={indicative_pattern[shift:]})', query_sequence[:pattern_indexes[0]])]
         if first_index: pattern_indexes.insert(0, first_index[0])
     elif args.print_flag: # if no matches were found
-        print("No pattern found")
+        print("No pattern found\n")
     
     write_fasta_files(gene_name, query_sequence, pattern_indexes, args.output_fasta)
     if args.print_flag:
-        print(f"Locations of Interest Found. Output FASTA generated: {args.output_fasta}")
+        print(f"Output FASTA generated: {args.output_fasta}\n")
 
     return
 
