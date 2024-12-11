@@ -51,6 +51,7 @@ def write_fasta_files(gene_id, sequence, break_indexes, output_name = 'output.fa
 
 def main():
     prev_time = round(time.perf_counter(), 5)
+    start_time = prev_time
     # parse command line arguments
     args = parse_arguments()
 
@@ -173,16 +174,20 @@ def main():
         if first_index: pattern_indexes.insert(0, first_index[0])
     elif args.print_flag: # if no matches were found
         print("No pattern found\n")
-
-    if args.print_flag:
-        curr_time = round(time.perf_counter(), 5)
-        print(f"Finished Pattern Search: {curr_time - prev_time}\n")
-        prev_time = curr_time
     
     write_fasta_files(gene_name, query_sequence, pattern_indexes, args.output_fasta)
     if args.print_flag:
         print(f"Output FASTA generated: {args.output_fasta}")
         print(f"\nLocations of Interest Indexes: {pattern_indexes}\n")
+
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"Finished Pattern Search: {curr_time - prev_time}\n")
+        prev_time = curr_time
+
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"Total Time: {curr_time - start_time}\n")
 
     return
 
