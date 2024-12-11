@@ -11,6 +11,7 @@ import numpy as np
 import re
 
 import argparse
+import time
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Process protein sequences and generate FASTA output.")
@@ -49,6 +50,7 @@ def write_fasta_files(gene_id, sequence, break_indexes, output_name = 'output.fa
                 fasta_file.write(sequence[start:])
 
 def main():
+    prev_time = round(time.perf_counter(), 5)
     # parse command line arguments
     args = parse_arguments()
 
@@ -73,6 +75,11 @@ def main():
     if not isinstance(pattern_percentage, float):
         raise ValueError("Error with 'pattern_percentage' data in HDF file. Check data type.")
 
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"HDF Unpacking Time: {curr_time - prev_time}")
+        prev_time = curr_time
+
     # parse fasta file for gene and sequence
     for record in SeqIO.parse(args.input_fasta, "fasta"):
         gene_name = record.id
@@ -81,6 +88,11 @@ def main():
         print("\nEntered FASTA file:")
         print(f"Gene Name: {gene_name}")
         print(f"Sequence: {sequence}\n")
+
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"FASTA Unpacking Time: {curr_time - prev_time}")
+        prev_time = curr_time
 
     # generate embeddings with torch
     model, alphabet = torch.hub.load("facebookresearch/esm:main", "esm2_t12_35M_UR50D")
@@ -97,6 +109,11 @@ def main():
     if args.print_flag:
         print(f"\nGenerated Embeddings for {gene_name}. Shape: {query_embeddings.shape}\n")
 
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"Embedding Generation Time: {curr_time - prev_time}\n")
+        prev_time = curr_time
+
     # index pool embeddings in FAISS
     faiss_index = faiss.IndexFlatIP(aggregate_embeddings.shape[1])
     faiss_index.add(aggregate_embeddings)
@@ -106,6 +123,11 @@ def main():
     # perform approximate nearest neighbor matching with faiss
     num_neighbors = 50
     faiss_similarity, faiss_indices = faiss_index.search(query_embeddings, num_neighbors)
+
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"\nFAISS Generation Time: {curr_time - prev_time}\n")
+        prev_time = curr_time
 
     # build cluster label sequence based on faiss search
     query_sequence = ""
@@ -127,6 +149,11 @@ def main():
     if args.print_flag:
         print(f"Sequence Confidence: {sequence_confidence}\n")
 
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"Cluster Label Sequencing Time: {curr_time - prev_time}\n")
+        prev_time = curr_time
+
     # BREAK BASED ON FLAG
     if args.output_flag == 's':
         write_fasta_files(gene_name, query_sequence, [], output_name = args.output_fasta)
@@ -146,10 +173,16 @@ def main():
         if first_index: pattern_indexes.insert(0, first_index[0])
     elif args.print_flag: # if no matches were found
         print("No pattern found\n")
+
+    if args.print_flag:
+        curr_time = round(time.perf_counter(), 5)
+        print(f"Finished Pattern Search: {curr_time - prev_time}\n")
+        prev_time = curr_time
     
     write_fasta_files(gene_name, query_sequence, pattern_indexes, args.output_fasta)
     if args.print_flag:
-        print(f"Output FASTA generated: {args.output_fasta}\n")
+        print(f"Output FASTA generated: {args.output_fasta}")
+        print(f"\nLocations of Interest Indexes: {pattern_indexes}\n")
 
     return
 
