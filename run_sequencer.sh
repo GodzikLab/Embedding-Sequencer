@@ -17,7 +17,7 @@ mkdir -p "$OUTPUT_DIR"
 for INPUT_FILE in "$INPUT_DIR"/*; do 
     # extract base name of input file
     BASENAME=$(basename "$INPUT_FILE")
-    OUTPUT_BASENAME="${BASENAME%.*}_sequenced.${BASENAME##*.}"
+    OUTPUT_BASENAME="${BASENAME%.*}_output.${BASENAME##*.}"
 
     # define the output file name in the output folder
     OUTPUT_FILE="$OUTPUT_DIR/$OUTPUT_BASENAME"
