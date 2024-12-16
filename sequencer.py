@@ -175,7 +175,13 @@ def main():
     elif args.print_flag: # if no matches were found
         print("No pattern found\n")
     
+    if len(pattern_indexes) >= 2:
+        gene_name = gene_name + f"| {len(pattern_indexes)} POI Found"
+    else:
+        pattern_indexes = []
+
     write_fasta_files(gene_name, query_sequence, pattern_indexes, args.output_fasta)
+
     if args.print_flag:
         print(f"Output FASTA generated: {args.output_fasta}")
         print(f"\nLocations of Interest Indexes: {pattern_indexes}\n")
