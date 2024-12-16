@@ -96,7 +96,7 @@ def main():
         prev_time = curr_time
 
     # generate embeddings with torch
-    model, alphabet = torch.hub.load("facebookresearch/esm:main", "esm2_t12_35M_UR50D")
+    model, alphabet = torch.hub.load("facebookresearch/esm:main", "esm2_t12_35M_UR50D", verbose = False)
     batch_converter = alphabet.get_batch_converter()
     batch_labels, batch_strs, batch_tokens = batch_converter([[gene_name, sequence]])
     num_layers = len(model.layers)
