@@ -8,7 +8,7 @@ We are currently using the **ESM-2 35M model.**
 
 ## Usage
 
-Recommended Test Case:
+### Recommended Initial Usage:
 
 ```
 python sequencer.py 20241205_hTLR_pool.hdf fasta_input/Q6PEZ8.fasta fasta_output/Q6PEZ8_output.fasta
