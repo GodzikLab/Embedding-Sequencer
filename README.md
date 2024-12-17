@@ -2,11 +2,17 @@
  
 ## Overview
 
-This script uses the clustering of  protein language model embeddings to generate alternative sequences that better reflect the protein's biological features. These sequences can be used to rapidly identify structural repeats and other protein domains.
+This script uses the clustering of  protein language model embeddings to generate alternative cluster-label sequences that better reflect the protein's biological features. In theory, these sequences can be used to rapidly identify structural repeats and other protein domains.
 
 We are currently using the **ESM-2 35M model.**
 
 ## Usage
+
+Recommended Test Case:
+
+```
+python sequencer.py 20241205_hTLR_pool.hdf fasta_input/Q6PEZ8.fasta fasta_output/Q6PEZ8_output.fasta
+```
 
 The script takes 3 inputs and has 2 optional flags to be used like so:
 ```
@@ -19,11 +25,13 @@ sequencer.py -f -p pool.hdf input.fasta output.fasta
 Included Components:
 * environment.yaml - Used for setting up the virtual environment.
 
-* HDF file(s) - Used to designate the <ins>clustering pool</ins> in use.
+* HDF file(s) - Inputs the <ins>clustering pool</ins> data to be used.
 
 * fasta_input & fasta_output folders - For organizational use.
 
 * sequencer.py script
+
+* run_sequencer.sh bash script - Used to run the Python script on every file in the fasta_input folder
 
 ## Key Components / Explanation
 
@@ -31,7 +39,7 @@ Included Components:
 
 In order to cluster the embeddings into letters, the method uses a <ins>clustering pool</ins> of preselected proteins with locations of interest. The embeddings of the pool are clustered into letters, optimized to identify a repeating pattern at each of the locations of interest.
 
-For example, the hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the alternate sequence. This information is stored as an HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
+For example, the hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the cluster-label sequence. This information is stored as an HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
 
 ### The Find Flag (-f)
 
