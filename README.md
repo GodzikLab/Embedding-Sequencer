@@ -23,7 +23,7 @@ sequencer.py -f -p pool.hdf input.fasta output.fasta
 ```
 
 Included Components:
-* environment.yaml - Used for setting up the virtual environment.
+* environment.yaml / requirements.txt - Either can be used for setting up the virtual environment.
 
 * HDF file(s) - Inputs the <ins>clustering pool</ins> data to be used.
 
@@ -35,17 +35,17 @@ Included Components:
 
 ## Key Components / Explanation
 
-### HDF Files & Clustering Pool
+### HDF Files
 
 In order to cluster the embeddings into letters, the method uses a <ins>clustering pool</ins> of preselected proteins with locations of interest. The embeddings of the pool are clustered into letters, optimized to identify a repeating pattern at each of the locations of interest.
 
-For example, the hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the cluster-label sequence. This information is stored as an HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
+For example, the hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the cluster-label sequence. The embeddings, clustering information, and pattern is stored in the HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
 
 ### The Find Flag (-f)
 
-As mentioned, the script can find locations of interests in the protein sequence using the pattern defined in the HDF file. This function is disabled by default and needs the '-f' find flag to be used. 
+As mentioned, the script can find locations of interests in the protein sequence using the pattern defined in the HDF file. The pattern search function is disabled by default and uses the '-f' find flag to be activated. The output of the FASTA file contains line breaks to reflect where the pattern was found and adds text in the gene description expressing how many were found. 
 
-This modifies the output of the FASTA file with line breaks to reflect where the pattern was found. 
+In the current iteration, the program will discard found patterns if it fails to find more than 2 and will additionally make an attempt to find the initial segment, which generally tends to have a slightly different cluster-label pattern. 
 
 ### The Print Flag (-p)
 
