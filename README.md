@@ -31,7 +31,7 @@ Included Components:
 
 * sequencer.py script
 
-* run_sequencer.sh bash script - Used to run the Python script on every file in the fasta_input folder
+* run_sequencer.sh / run_finder.sh bash script - Used to run the Python script on every file in the fasta_input folder
 
 ## Key Components / Explanation
 
