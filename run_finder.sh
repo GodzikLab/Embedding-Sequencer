@@ -7,6 +7,9 @@ OUTPUT_DIR="fasta_output"
 # hdf file
 HDF_FILE="20241205_hTLR_pool.hdf"
 
+# flags
+FLAG1="-f"
+
 # make output directory if missing
 mkdir -p "$OUTPUT_DIR"
 
@@ -20,7 +23,7 @@ for INPUT_FILE in "$INPUT_DIR"/*; do
     OUTPUT_FILE="$OUTPUT_DIR/$OUTPUT_BASENAME"
 
     # run the python script with flags and i/o file names
-    python sequencer.py "$HDF_FILE" "$INPUT_FILE" "$OUTPUT_FILE"
+    python sequencer.py $FLAG1 "$HDF_FILE" "$INPUT_FILE" "$OUTPUT_FILE"
 
     # print progress
     echo "Processed: $INPUT_FILE -> $OUTPUT_FILE"
