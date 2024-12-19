@@ -156,3 +156,4 @@ cython_debug/
 
 # output files
 fasta_output/*.fasta
+fasta_output/*.aln

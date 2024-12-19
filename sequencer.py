@@ -15,7 +15,8 @@ import time
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Process protein sequences and generate FASTA output.")
-    parser.add_argument("-f", "--output_flag", action='store_const', const='f', default='s', help="Set to 'f' (find) if provided; defaults to 's' (sequence)")
+    parser.add_argument("-a", "--align_flag", action='store_true', help="Changes output from FASTA to CLUSTAL aln files.")
+    parser.add_argument("-f", "--find_flag", action='store_const', const='f', default='s', help="Set to 'f' (find) if provided; defaults to 's' (sequence)")
     parser.add_argument("-p", "--print_flag", action="store_true", help="Enable printing of intermediate results")
     parser.add_argument("input_hdf", help="Path to the input HDF file")
     parser.add_argument("input_fasta", help="Path to the input FASTA file")
@@ -48,6 +49,44 @@ def write_fasta_files(gene_id, sequence, break_indexes, description = "", output
 
             if start < len(sequence):
                 fasta_file.write(sequence[start:])
+
+def write_aln_files(seq1_id, seq2_id, seq1, seq2, break_indexes = [], output_name = 'output.aln'):
+    # check sequence lengths are equal
+    if len(seq1) != len(seq2):
+        raise ValueError("Sequences must be of the same length.")
+
+    # fix output name if fasta
+    if output_name[-6:] == ".fasta":
+        output_name = output_name[:-6] + ".aln"
+
+    total_length = len(seq1)
+    curr_pos = 0
+
+    # if break_indexes not given, set list to increment in sets of 60
+    if not break_indexes:
+        increment = 60
+        break_indexes = list(range(60, total_length + increment, increment))
+
+    with open(output_name, "w") as file:
+        # header
+        file.write("CLUSTAL\n\n")
+
+        # process each block
+        for block_break in break_indexes:
+            if curr_pos >= total_length:
+                break # finish processing
+
+            end_pos = min(block_break, total_length)
+
+            block1 = seq1[curr_pos:end_pos]
+            block2 = seq2[curr_pos:end_pos]
+
+            file.write(f"{seq1_id.ljust(10)} {block1}\n")
+            file.write(f"{seq2_id.ljust(10)} {block2}\n")
+            file.write("\n")  # Add a blank line between blocks
+            
+            # Update current position
+            curr_pos = end_pos
 
 def main():
     prev_time = round(time.perf_counter(), 5)
@@ -156,8 +195,13 @@ def main():
         prev_time = curr_time
 
     # BREAK BASED ON FLAG
-    if args.output_flag == 's':
-        write_fasta_files(gene_name, query_sequence, [], output_name = args.output_fasta)
+    if args.find_flag == 's':
+        if args.align_flag:
+            seq1_id = gene_name + "_AMINO"
+            seq2_id = gene_name + "_EMBED"
+            write_aln_files(seq1_id, seq2_id, sequence, query_sequence, [], output_name = args.output_fasta)
+        else: 
+            write_fasta_files(gene_name, query_sequence, [], output_name = args.output_fasta)
         if args.print_flag:
             print(f"Sequence FASTA generated: {args.output_fasta}")
         return
@@ -177,12 +221,18 @@ def main():
     elif args.print_flag: # if no matches were found
         print("No pattern found\n")
     
+    description = ""
     if len(pattern_indexes) >= 2:
-        gene_name = gene_name + f" | {len(pattern_indexes)} POI Found | Residues {pattern_indexes[0]+1} to {pattern_indexes[-1] + 24}"
+        description = f" | {len(pattern_indexes)} POI Found | Residues {pattern_indexes[0]+1} to {pattern_indexes[-1] + 24}"
     else:
         pattern_indexes = []
 
-    write_fasta_files(gene_name, query_sequence, pattern_indexes, output_name = args.output_fasta)
+    if args.align_flag:
+        seq1_id = gene_name + "_AMINO"
+        seq2_id = gene_name + "_EMBED"
+        write_aln_files(seq1_id, seq2_id, sequence, query_sequence, pattern_indexes, output_name = args.output_fasta)
+    else: 
+        write_fasta_files(gene_name + description, query_sequence, pattern_indexes, output_name = args.output_fasta)
 
     if args.print_flag:
         print(f"Output FASTA generated: {args.output_fasta}")

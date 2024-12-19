@@ -11,15 +11,15 @@ We are currently using the **ESM-2 35M model.**
 ### Recommended Initial Usage:
 
 ```
-python sequencer.py 20241205_hTLR_pool.hdf fasta_input/Q6PEZ8.fasta fasta_output/Q6PEZ8_output.fasta
+python sequencer.py -f 20241205_hTLR_pool.hdf fasta_input/Q6PEZ8.fasta fasta_output/Q6PEZ8_output.fasta
 ```
 
-The script takes 3 inputs and has 2 optional flags to be used like so:
+The script takes 3 inputs and has 3 optional flags to be used like so:
 ```
 sequencer.py pool.hdf input.fasta output.fasta
 ```
 ```
-sequencer.py -f -p pool.hdf input.fasta output.fasta
+sequencer.py -a -f -p pool.hdf input.fasta output.fasta
 ```
 
 Included Components:
@@ -40,6 +40,10 @@ Included Components:
 In order to cluster the embeddings into letters, the method uses a <ins>clustering pool</ins> of preselected proteins with locations of interest. The embeddings of the pool are clustered into letters, optimized to identify a repeating pattern at each of the locations of interest.
 
 For example, the hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the cluster-label sequence. The embeddings, clustering information, and pattern is stored in the HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
+
+### The Align Flag (-a)
+
+This flag will cause the program to output both the original and cluster-label sequence together as a Clustal aln file. This flag can be used in conjunction with the Find Flag mentioned below.
 
 ### The Find Flag (-f)
 
