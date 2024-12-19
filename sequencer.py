@@ -25,10 +25,10 @@ def parse_arguments():
     return args
 
 # used to write fastas with newlines based on break_indexes
-def write_fasta_files(gene_id, sequence, break_indexes, output_name = 'output.fasta'):
+def write_fasta_files(gene_id, sequence, break_indexes, description = "", output_name = 'output.fasta'):
     # if indexes is blank, uses normal writing schema
     if not break_indexes:
-        seq_record = SeqRecord(Seq(sequence), id=gene_id, description="")
+        seq_record = SeqRecord(Seq(sequence), id = gene_id, description = description)
         with open(output_name, "w") as fasta_file:
             SeqIO.write(seq_record, fasta_file, "fasta")
 
@@ -178,11 +178,11 @@ def main():
         print("No pattern found\n")
     
     if len(pattern_indexes) >= 2:
-        gene_name = gene_name + f"| {len(pattern_indexes)} POI Found"
+        gene_name = gene_name + f" | {len(pattern_indexes)} POI Found | Residues {pattern_indexes[0]+1} to {pattern_indexes[-1] + 24}"
     else:
         pattern_indexes = []
 
-    write_fasta_files(gene_name, query_sequence, pattern_indexes, args.output_fasta)
+    write_fasta_files(gene_name, query_sequence, pattern_indexes, output_name = args.output_fasta)
 
     if args.print_flag:
         print(f"Output FASTA generated: {args.output_fasta}")
