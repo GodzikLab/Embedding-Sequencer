@@ -71,6 +71,9 @@ def write_aln_files(seq1_id, seq2_id, seq1, seq2, break_indexes = [], output_nam
         # header
         file.write("CLUSTAL\n\n")
 
+        # add end block
+        break_indexes.append(total_length)
+
         # process each block
         for block_break in break_indexes:
             if curr_pos >= total_length:
