@@ -64,7 +64,7 @@ def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_ne
     # get sequence confidence (percentage of sequence without outliers)
     outlier_percentage = round((len(outlier_dict) / len(faiss_similarity)) * 100, 3)
     sequence_confidence = round(100 - outlier_percentage, 3)
-    return query_sequence, sequence_confidence
+    return query_sequence, outlier_dict, sequence_confidence
 
 
 # NEW EMBEDDINGS FUNCTIONS
