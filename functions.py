@@ -1,8 +1,13 @@
 import numpy as np
+import pandas as pd
 import re
 import os 
 
 from sklearn.preprocessing import normalize # used to normalize embeddings
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 import h5py # working with HDF files
 import faiss # index used for approx NN search of vectors
@@ -128,5 +133,44 @@ def determine_input(input_path):
         elif ext in [".csv", ".tsv"]:
             return 2 # CSV/TSV file
     return -1
+
+def read_fasta(fasta_file):
+    '''Extracts name and sequence information from FASTA file, building a DataFrame.'''
+    data = []
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        name = record.id
+        sequence = str(record.seq)
+        data.append({"Entry Name":name, "Sequence":sequence})
+    df = pd.DataFrame(data)
+    return df
+
+def read_directory_fastas(directory):
+    '''Reads every FASTA file's information in a directory, building a DataFrame with all items.'''
+    data = []
+    for file in os.listdir(directory):
+        if file.endswith((".fasta", ".fa")):
+            file_path = os.path.join(directory, file)
+            try:
+                for record in SeqIO.parse(file_path, "fasta"):
+                    name = record.id
+                    sequence = str(record.seq)
+                    data.append({"Entry Name":name, "Sequence":sequence})
+            except Exception as e:
+                # print(f"Error processing {file}:{e}")
+                continue # skips
+    df = pd.DataFrame(data)
+    return df
+
+def read_csv_tsv(file_path):
+    '''Takes in CSV or TSV files and then builds a DataFrame with the information.'''
+    delimiter = "," # defaults to comma for CSV files
+    if file_path.endswith(".tsv"): # switches to tab for TSV files
+        delimiter = "\t"
+
+    df = pd.read_csv(file_path, sep = delimiter, header = 0, usecols = [0, 1]) # header = 0 skips first row, assumes cols 0 and 1 have info
+    df.columns = ["Entry Name", "Sequence"] # renames columns
+    return df
+    
+
 
 
