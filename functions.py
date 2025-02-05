@@ -1,5 +1,7 @@
 import numpy as np
 
+from sklearn.preprocessing import normalize # used to normalize embeddings
+
 import h5py # working with HDF files
 import faiss # index used for approx NN search of vectors
 import torch # for managing models
@@ -41,15 +43,21 @@ def build_faiss_index(aggregated_embeddings):
 # NEW EMBEDDINGS FUNCTIONS
 
 def download_model(source = "facebookresearch/esm:main", version = "esm2_t12_35M_UR50D"):
-    '''Downloads and sets up the model and alphabet of the protein language model being used.'''
+    '''Downloads and sets up the model and batch_converter of the protein language model being used.'''
     model, alphabet = torch.hub.load("facebookresearch/esm:main", "esm2_t12_35M_UR50D", verbose = False)
     batch_converter = alphabet.get_batch_converter()
-    return model, alphabet, batch_converter
+    return model, batch_converter
 
+def generate_embeddings(sequence, model, batch_converter):
+    '''Generates embeddings for a single sequence using prepared model.'''
+    batch_labels, batch_strs, batch_tokens = batch_converter([["", sequence]])
+    num_layers = len(model.layers)
 
-
-
-
-
-
-
+    with torch.no_grad():
+        # pull last layer of embeddings
+        results = model(batch_tokens, repr_layers=[num_layers])
+        query_embeddings = results["representations"][num_layers][0, 1:-1].numpy()
+        # normalize embeddings
+        query_embeddings = normalize(query_embeddings)
+        query_embeddings = query_embeddings.astype(np.float32)
+    return query_embeddings
