@@ -6,7 +6,7 @@ import h5py # working with HDF files
 import faiss # index used for approx NN search of vectors
 import torch # for managing models
 
-# CLUSTERING POOL FUNCTIONS
+# CLUSTERING POOL / FAISS INDEX FUNCTIONS
 
 def unpack_hdf(hdf_file):
     '''Extracts the information of an inputted HDF file and checks their correctness.
@@ -40,6 +40,33 @@ def build_faiss_index(aggregated_embeddings):
     faiss_index.add(aggregated_embeddings)
     return faiss_index
 
+def search_faiss_index(query_embeddings, faiss_index, num_neighbors = 50):
+    '''Searches prebuilt FAISS index with approximate nearest neighbor.'''
+    faiss_similarity, faiss_indices = faiss_index.search(query_embeddings, num_neighbors)
+    return faiss_similarity, faiss_indices
+
+def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_neighbors = 50, bad_similarity_standard = 0.3):
+    '''Builds the cluster-label sequence for the query embedding and returning additional outlier information.'''
+    query_sequence = ""
+    outlier_dict = {}
+    # iterates through similar vectors
+    for i in range(len(faiss_similarity)):
+        label_weights = {}
+        for sim, idx in zip(faiss_similarity[i], faiss_indices[i]):
+            label = cluster_labels[idx]
+            label_weights[label] = label_weights.get(label,0) + sim # adds voting weight based on similarity score
+        majority_label = max(label_weights, key = label_weights.get)
+        majority_weight = label_weights[majority_label]
+        query_sequence += chr(ord('A') + majority_label)
+        if majority_weight < (num_neighbors * bad_similarity_standard): # 0.3 is definition of 'bad similarity' for normalized vector comparisons
+            outlier_dict[i] = majority_weight
+    
+    # get sequence confidence (percentage of sequence without outliers)
+    outlier_percentage = round((len(outlier_dict) / len(faiss_similarity)) * 100, 3)
+    sequence_confidence = round(100 - outlier_percentage, 3)
+    return query_sequence, sequence_confidence
+
+
 # NEW EMBEDDINGS FUNCTIONS
 
 def download_model(source = "facebookresearch/esm:main", version = "esm2_t12_35M_UR50D"):
@@ -49,7 +76,7 @@ def download_model(source = "facebookresearch/esm:main", version = "esm2_t12_35M
     return model, batch_converter
 
 def generate_embeddings(sequence, model, batch_converter):
-    '''Generates embeddings for a single sequence using prepared model.'''
+    '''Generates embeddings for a single sequence using prepared model and normalizes.'''
     batch_labels, batch_strs, batch_tokens = batch_converter([["", sequence]])
     num_layers = len(model.layers)
 
