@@ -2,8 +2,9 @@ import numpy as np
 
 import h5py # working with HDF files
 import faiss # index used for approx NN search of vectors
+import torch # for managing models
 
-# MANAGEMENT OF CLUSTERING POOL
+# CLUSTERING POOL FUNCTIONS
 
 def unpack_hdf(hdf_file):
     '''Extracts the information of an inputted HDF file and checks their correctness.
@@ -36,6 +37,15 @@ def build_faiss_index(aggregated_embeddings):
     faiss_index = faiss.IndexFlatIP(aggregated_embeddings.shape[1])
     faiss_index.add(aggregated_embeddings)
     return faiss_index
+
+# NEW EMBEDDINGS FUNCTIONS
+
+def download_model(source = "facebookresearch/esm:main", version = "esm2_t12_35M_UR50D"):
+    '''Downloads and sets up the model and alphabet of the protein language model being used.'''
+    model, alphabet = torch.hub.load("facebookresearch/esm:main", "esm2_t12_35M_UR50D", verbose = False)
+    batch_converter = alphabet.get_batch_converter()
+    return model, alphabet, batch_converter
+
 
 
 
