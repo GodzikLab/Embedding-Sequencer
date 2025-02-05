@@ -1,6 +1,9 @@
 import numpy as np
 
 import h5py # working with HDF files
+import faiss # index used for approx NN search of vectors
+
+# MANAGEMENT OF CLUSTERING POOL
 
 def unpack_hdf(hdf_file):
     '''Extracts the information of an inputted HDF file and checks their correctness.
@@ -27,6 +30,13 @@ def unpack_hdf(hdf_file):
         raise ValueError("Error with 'pattern_percentage' data in HDF file. Check data type.")
 
     return aggregated_embeddings, cluster_labels, pool_proteins_list, indicative_pattern, pattern_percentage
+
+def build_faiss_index(aggregated_embeddings):
+    ''' Takes an input of aggregated embeddings to build a FAISS index for rapid approximate nearest neighbor search.'''
+    faiss_index = faiss.IndexFlatIP(aggregated_embeddings.shape[1])
+    faiss_index.add(aggregated_embeddings)
+    return faiss_index
+
 
 
 
