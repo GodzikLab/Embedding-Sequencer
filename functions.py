@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import os 
 
 from sklearn.preprocessing import normalize # used to normalize embeddings
 
@@ -109,3 +110,23 @@ def find_pattern(query_sequence, indicative_pattern):
         pattern_indexes = [] # empties if less than 2 patterns were found / a false positive
 
     return pattern_indexes
+
+# I/O FUNCTIONS
+
+def determine_input(input_path):
+    '''Determines the input type.
+    0 - FASTA file
+    1 - Directory (assumed multiple FASTA files)
+    2 - CSV/TSV file
+    '''
+    if os.path.isdir(input_path):
+        return 1 # path is directory
+    if os.path.isfile(input_path):
+        _, ext = os.path.splitext(input_path.lower())
+        if ext in [".fa", ".fasta"]:
+            return 0 # single FASTA file
+        elif ext in [".csv", ".tsv"]:
+            return 2 # CSV/TSV file
+    return -1
+
+
