@@ -46,7 +46,7 @@ def search_faiss_index(query_embeddings, faiss_index, num_neighbors = 50):
     return faiss_similarity, faiss_indices
 
 def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_neighbors = 50, bad_similarity_standard = 0.3):
-    '''Builds the cluster-label sequence for the query embedding and returning additional outlier information.'''
+    '''Builds the cluster-label sequence for the query embedding and highlighting outliers.'''
     query_sequence = ""
     outlier_dict = {}
     # iterates through similar vectors
@@ -60,11 +60,14 @@ def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_ne
         query_sequence += chr(ord('A') + majority_label)
         if majority_weight < (num_neighbors * bad_similarity_standard): # 0.3 is definition of 'bad similarity' for normalized vector comparisons
             outlier_dict[i] = majority_weight
+    return query_sequence, outlier_dict
     
-    # get sequence confidence (percentage of sequence without outliers)
+def calculate_confidence(outlier_dict, faiss_similarity):
+    '''Calculates the sequence confidence of the built sequence using the outlier dict.'''
     outlier_percentage = round((len(outlier_dict) / len(faiss_similarity)) * 100, 3)
     sequence_confidence = round(100 - outlier_percentage, 3)
-    return query_sequence, outlier_dict, sequence_confidence
+    return sequence_confidence
+
 
 
 # NEW EMBEDDINGS FUNCTIONS
