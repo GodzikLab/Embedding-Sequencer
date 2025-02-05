@@ -1,4 +1,5 @@
 import numpy as np
+import re
 
 from sklearn.preprocessing import normalize # used to normalize embeddings
 
@@ -68,8 +69,6 @@ def calculate_confidence(outlier_dict, faiss_similarity):
     sequence_confidence = round(100 - outlier_percentage, 3)
     return sequence_confidence
 
-
-
 # NEW EMBEDDINGS FUNCTIONS
 
 def download_model(source = "facebookresearch/esm:main", version = "esm2_t12_35M_UR50D"):
@@ -91,3 +90,22 @@ def generate_embeddings(sequence, model, batch_converter):
         query_embeddings = normalize(query_embeddings)
         query_embeddings = query_embeddings.astype(np.float32)
     return query_embeddings
+
+# PATTERN FINDER FUNCTIONS
+
+def find_pattern(query_sequence, indicative_pattern):
+    '''Finds the indices of the indicative pattern in the sequence. Returns the center indexes of the pattern.'''
+    shift = (len(indicative_pattern)) // 2 # index shift for the pattern to be in the center position
+
+    # regex search expression to find matches
+    pattern_indexes = [match.start() + shift for match in re.finditer(f'(?={indicative_pattern})', query_sequence)]
+    # checks for missed initial fragments if other patterns were found
+    if len(pattern_indexes) >= 2:
+        first_index = [match.start() for match in re.finditer(f'(?={indicative_pattern[shift-1:]})', query_sequence[:pattern_indexes[0]])]
+        if first_index: pattern_indexes.insert(0, first_index[0])
+        elif pattern_indexes[0] > 35:
+            pattern_indexes.insert(0, pattern_indexes[0] - pattern_indexes[1] + pattern_indexes[0])
+    else:
+        pattern_indexes = [] # empties if less than 2 patterns were found / a false positive
+
+    return pattern_indexes
