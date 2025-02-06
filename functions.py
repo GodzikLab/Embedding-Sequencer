@@ -231,8 +231,26 @@ def write_aln(name1, name2, seq1, seq2, break_indexes = [], output_name = "outpu
             curr_pos = end_pos
     return
 
-def write_to_directory():
-    '''Repeatedly calls the write_fasta and write_aln functions to a directory through a list.'''
+def write_fastas_to_directory(output_df, output_directory = ""):
+    '''Repeatedly calls the write_fasta function to a directory through a DataFrame.'''
+    if output_directory and not os.path.exists(output_directory):
+        os.makedirs(output_directory) # makes directory if it doesn't exist
+
+    for _, row in output_df.iterrows():
+        name, sequence = row["Entry Name"], row["Sequence"]
+        description = f" | {row["Number of Repeats"]} Repeats Found | Residues {row["Start"]} to {row["End"]}"
+        write_fasta(name, sequence, row["Repeat Locations"], description, output_name = f"{output_directory}/{name}_output.fasta")
+    return
+
+def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
+    '''Repeatedly calls the write_aln function to a directory, using two DataFrames whose items are aligned based on matching names.'''
+    amino_df = amino_df.rename(columns = {"Sequence":"Amino Sequence"})
+    embed_df = embed_df.rename(columns = {"Sequence":"Embed Sequence"})
+    combined_df = amino_df.merge(embed_df, on = "Entry Name", how = "outer") # renames columns and combines based on Entry Name
+
+    for _, row in combined_df.iterrows():
+        name, amino_sequence, embed_sequence, break_indexes = row["Entry Name"], row["Amino Sequence"], row["Embed Sequence"], row["Repeat Locations"]
+        write_aln(f"{name}_AMINO", f"{name}_EMBED", amino_sequence, embed_sequence, break_indexes, output_name = "{name}_output.aln")
     return
 
 def write_tsv():
