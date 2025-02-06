@@ -116,7 +116,7 @@ def find_pattern(query_sequence, indicative_pattern):
 
     return pattern_indexes
 
-# I/O FUNCTIONS
+# INPUT FUNCTIONS
 
 def determine_input(input_path):
     '''Determines the input type.
@@ -171,6 +171,73 @@ def read_csv_tsv(file_path):
     df.columns = ["Entry Name", "Sequence"] # renames columns
     return df
     
+# OUTPUT FUNCTIONS
+
+def write_fasta(name, sequence, break_indexes = [], description = "", output_name = "output.fasta"):
+    '''Writes a single FASTA file based on input of name and sequence. Uses special line breaks to show repeats.'''
+    if not break_indexes: # normal fasta schema
+        seq_record = SeqRecord(Seq(sequence), id = name, description = description)
+        with open(output_name, "w") as fasta_file:
+            SeqIO.write(seq_record, fasta_file, "fasta")
+    else: # special line breaks
+        with open(output_name, "w") as fasta_file:
+            fasta_file.write(f">{name} \n")
+            start = 0
+            for idx in break_indexes:
+                if start >= len(sequence):
+                    break
+                segment = sequence[start:idx]
+                fasta_file.write(segment + "\n")
+                start = idx
+            if start < len(sequence):
+                fasta_file.write(sequence[start:])
+    return 0
+
+def write_aln(name1, name2, seq1, seq2, break_indexes = [], output_name = "output.aln"):
+    '''Writes a single ALN file based on input of 2 names and sequences.'''
+    # check sequence lengths are equal
+    if len(seq1) != len(seq2):
+        raise ValueError("Sequences must be of the same length.")
+    # fix output name if fasta
+    if output_name[-6:] == ".fasta":
+        output_name = output_name[:-6] + ".aln"
+
+    total_length = len(seq1)
+    curr_pos = 0
+
+    # if break_indexes not given, set list to increment in sets of 60
+    if not break_indexes:
+        increment = 60
+        break_indexes = list(range(60, total_length + increment, increment))
+
+    with open(output_name, "w") as file:
+        # header
+        file.write("CLUSTAL\n\n")
+
+        # add end block
+        break_indexes.append(total_length)
+
+        # process each block
+        for block_break in break_indexes:
+            if curr_pos >= total_length:
+                break # finished processing
+            end_pos = min(block_break, total_length)
+            block1 = seq1[curr_pos:end_pos]
+            block2 = seq2[curr_pos:end_pos]
+            file.write(f"{name1.ljust(10)} {block1}\n")
+            file.write(f"{name2.ljust(10)} {block2}\n")
+            file.write("\n")  # Add a blank line between blocks
+            # Update current position
+            curr_pos = end_pos
+    return
+
+def write_to_directory():
+    '''Repeatedly calls the write_fasta and write_aln functions to a directory through a list.'''
+    return
+
+def write_tsv():
+    '''Writes a single TSV files that contains all of an output's embedding sequences.'''
+    return
 
 
 
