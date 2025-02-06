@@ -239,7 +239,7 @@ def write_fastas_to_directory(output_df, output_directory = ""):
     for _, row in output_df.iterrows():
         name, sequence = row["Entry Name"], row["Sequence"]
         description = f" | {row["Number of Repeats"]} Repeats Found | Residues {row["Start"]} to {row["End"]}"
-        write_fasta(name, sequence, row["Repeat Locations"], description, output_name = f"{output_directory}/{name}_output.fasta")
+        write_fasta(name, sequence, row["Repeat Locations"], description, output_name = f"{output_directory}{name}_output.fasta")
     return
 
 def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
@@ -250,11 +250,12 @@ def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
 
     for _, row in combined_df.iterrows():
         name, amino_sequence, embed_sequence, break_indexes = row["Entry Name"], row["Amino Sequence"], row["Embed Sequence"], row["Repeat Locations"]
-        write_aln(f"{name}_AMINO", f"{name}_EMBED", amino_sequence, embed_sequence, break_indexes, output_name = "{name}_output.aln")
+        write_aln(f"{name}_AMINO", f"{name}_EMBED", amino_sequence, embed_sequence, break_indexes, output_name = f"{output_directory}{name}_output.aln")
     return
 
-def write_tsv():
+def write_tsv(output_df, output_directory = ""):
     '''Writes a single TSV files that contains all of an output's embedding sequences.'''
+    
     return
 
 
