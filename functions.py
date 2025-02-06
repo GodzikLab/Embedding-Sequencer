@@ -244,6 +244,8 @@ def write_fastas_to_directory(output_df, output_directory = ""):
 
 def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
     '''Repeatedly calls the write_aln function to a directory, using two DataFrames whose items are aligned based on matching names.'''
+    if output_directory and not os.path.exists(output_directory):
+        os.makedirs(output_directory) # makes directory if it doesn't exist
     amino_df = amino_df.rename(columns = {"Sequence":"Amino Sequence"})
     embed_df = embed_df.rename(columns = {"Sequence":"Embed Sequence"})
     combined_df = amino_df.merge(embed_df, on = "Entry Name", how = "outer") # renames columns and combines based on Entry Name
@@ -253,9 +255,9 @@ def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
         write_aln(f"{name}_AMINO", f"{name}_EMBED", amino_sequence, embed_sequence, break_indexes, output_name = f"{output_directory}{name}_output.aln")
     return
 
-def write_tsv(output_df, output_directory = ""):
-    '''Writes a single TSV files that contains all of an output's embedding sequences.'''
-    
+def write_tsv(output_df, output_name = "output.tsv"):
+    '''Writes a single TSV files from a DataFrame'''
+    output_df.to_csv(output_name, sep = "\t", index = False)
     return
 
 
