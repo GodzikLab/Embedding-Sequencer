@@ -157,3 +157,4 @@ cython_debug/
 # output files
 file_output/*.fasta
 file_output/*.aln
+file_output/*.tsv

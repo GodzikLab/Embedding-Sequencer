@@ -165,7 +165,7 @@ def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
         write_aln(f"{name}_AMINO", f"{name}_EMBED", amino_sequence, embed_sequence, break_indexes, output_name = f"{output_directory}/{entry}_output.aln")
     return
 
-def write_tsv(output_df, output_name = "output.tsv"):
+def write_tsv(output_df, output_directory = "", output_name = "output.tsv"):
     '''Writes a single TSV files from a DataFrame'''
-    output_df.to_csv(output_name, sep = "\t", index = False)
+    output_df.to_csv(f"{output_directory}/{output_name}", sep = "\t", index = False)
     return

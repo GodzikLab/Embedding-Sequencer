@@ -6,6 +6,7 @@ import modules.file_io
 
 import time
 import pandas as pd
+import os
 
 def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = "f", print_flag = False, output_path = "fasta_output"):
     '''Manages the scripting of actions for the embedding sequencer pipeline.
@@ -99,7 +100,7 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     elif output_type == "a": # ALN
         modules.file_io.write_alns_to_directory(output_df, output_directory = f"{output_path}/")
     elif output_type == "t": # TSV
-        modules.file_io.write_tsv(output_df)
+        modules.file_io.write_tsv(output_df, output_directory = f"{output_path}/")
     else:
         raise ValueError("Invalid output type entered.")
     
