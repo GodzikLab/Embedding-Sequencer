@@ -59,6 +59,21 @@ def read_csv_tsv(file_path):
     df = pd.read_csv(file_path, sep = delimiter, header = 0, usecols = [0, 1]) # header = 0 skips first row, assumes cols 0 and 1 have info
     df.columns = ["Entry Name", "Sequence"] # renames columns
     return df
+
+def validate_input_df(df):
+    '''Checks the input DataFrame, making sure it has rows and contains a columns for Entry Name and Sequence.'''
+    required_columns = ["Entry Name", "Sequence"]
+    if df is None or not isinstance(df, pd.DataFrame):
+        raise ValueError("Error: Input did not generate a valid DataFrame.")
+    
+    if df.empty:
+        raise ValueError("Error: Generated DataFrame is empty.")
+    
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        raise ValueError(f"Error: Generated DataFrame is missing columns: {missing_columns}")
+
+    return True  # The DataFrame is valid
     
 # OUTPUT FUNCTIONS
 
