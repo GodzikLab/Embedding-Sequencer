@@ -7,23 +7,13 @@ import modules.file_io
 import time
 import pandas as pd
 
-# inputs to consider
-'''
-- output type: fasta, aln, tsv (flags -f, -a, -t)
-    - determine whether to call the directory function based on the number of inputs
-- print flag: -p 
-- path input > gets processed in the scripting (there's a function)
-- path output (optional) - change the name of the output single file
-
-main scripting function(input, output_type = f/a/t, print = True/False, output = "")
-'''
-def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 1, print_flag = False, output_path = "fasta_output"):
+def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = "f", print_flag = False, output_path = "fasta_output"):
     '''Manages the scripting of actions for the embedding sequencer pipeline.
     
     Parameters:
         input_path: Input of the pipeline, takes FASTA, directory, or CSV/TSV
         hdf_file: Clustering mapping information as an HDF file
-        output_type: Determines the output of the pipeline (1 - FASTA, 2 - ALN, 3 - TSV file)
+        output_type: Determines the output of the pipeline (f - FASTA, a - ALN, t - TSV file)
         print_flag: If True, prints progress updates within the pipeline.
         output_path: Determines the output folder
     '''
@@ -101,11 +91,11 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     if print_flag: print("Finished Generating Embeddings.\n")
 
     # output
-    if output_type == 1: # FASTA
+    if output_type == "f": # FASTA
         modules.file_io.write_fastas_to_directory(output_df, output_directory = output_path)
-    elif output_type == 2: # ALN
+    elif output_type == "a": # ALN
         modules.file_io.write_alns_to_directory(output_df, output_directory = output_path)
-    elif output_type == 3: # TSV
+    elif output_type == "t": # TSV
         modules.file_io.write_tsv(output_df)
     else:
         raise ValueError("Invalid output type entered.")
