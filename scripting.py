@@ -54,10 +54,12 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
 
     # establish/download model
     model, batch_converter = modules.embedding_generation.download_model()
+    if print_flag: print("Finished downloading and setting up protein language model.\n")
 
     # start output list
     output_data = []
     num_neighbors = 50
+    if print_flag: print("Generating Embeddings Sequences for Query Proteins...")
 
     # LOOP
     for _, row in input_df.iterrows():
@@ -93,8 +95,10 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
             "End" : end_pos
         }
         output_data.append(data_entry)
-
+        if print_flag: print(f"   {name} - {query_sequence[:20]}")
+    
     output_df = pd.DataFrame(output_data)
+    if print_flag: print("Finished Generating Embeddings.\n")
 
     # output
     if output_type == 1: # FASTA
@@ -105,5 +109,9 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
         modules.file_io.write_tsv(output_df)
     else:
         raise ValueError("Invalid output type entered.")
+    
+    end_time = round(time.perf_counter(), 4)
+    runtime = start_time - end_time
+    if print_flag: print(f"Program Completed. Exiting with Total Runtime of {runtime} seconds.")
 
-    return
+    return 
