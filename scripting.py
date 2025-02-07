@@ -95,7 +95,7 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
 
     # output
     if output_type == "f": # FASTA
-        modules.file_io.write_fastas_to_directory(output_df, output_directory = "")
+        modules.file_io.write_fastas_to_directory(output_df, output_directory = f"{output_path}/")
     elif output_type == "a": # ALN
         modules.file_io.write_alns_to_directory(output_df, output_directory = f"{output_path}/")
     elif output_type == "t": # TSV
