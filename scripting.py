@@ -35,7 +35,8 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     
     # check input and output_type
     modules.file_io.validate_input_df(input_df) # checks df for columns and non-empty
-    if print_flag: print(f"Successfully inputted query of {len(input_df)} proteins.")
+    if print_flag: print(f"Successfully inputted query of {len(input_df)} proteins.\n")
+    # if print_flag: print(input_df + "\n")
 
     # extract clustering information from HDF file and build FAISS index
     aggregated_embeddings, cluster_labels, _, indicative_pattern, _ = modules.cluster_mapping.unpack_hdf(hdf_file)
@@ -53,7 +54,7 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
 
     # LOOP
     for _, row in input_df.iterrows():
-        name, sequence = row["Entry Name"], row["Sequence"]
+        entry, name, sequence = row["Entry"], row["Entry Name"], row["Sequence"]
 
         # generate embeddings
         query_embeddings = modules.embedding_generation.generate_embeddings(sequence, model, batch_converter)
@@ -70,38 +71,40 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
         # find repeat locations
         pattern_indexes = modules.embedding_generation.find_pattern(query_sequence, indicative_pattern)
         if pattern_indexes: # check if pattern indexes if empty
-            start_pos, end_pos = pattern_indexes[0], pattern_indexes[-1]
+            start_pos, end_pos = pattern_indexes[0] + 1, pattern_indexes[-1] + 24
         else:
             start_pos, end_pos = -1, -1
 
         # save to output list
         data_entry = {
+            "Entry" : entry,
             "Entry Name" : name,
             "Sequence" : query_sequence,
             "Sequence Confidence" : sequence_confidence,
-            "Repeat Locations" : pattern_indexes,
+            "Repeat Locations" : [x + 1 for x in pattern_indexes], # indexes to residue count
             "Number of Repeats" : len(pattern_indexes),
             "Start" : start_pos,
             "End" : end_pos
         }
         output_data.append(data_entry)
-        if print_flag: print(f"   {name} - {query_sequence[:20]}")
+        if print_flag: print(f"   {name} - {query_sequence[:50]}")
     
     output_df = pd.DataFrame(output_data)
     if print_flag: print("Finished Generating Embeddings.\n")
+    # if print_flag: print(output_df)
 
     # output
     if output_type == "f": # FASTA
-        modules.file_io.write_fastas_to_directory(output_df, output_directory = output_path)
+        modules.file_io.write_fastas_to_directory(output_df, output_directory = "")
     elif output_type == "a": # ALN
-        modules.file_io.write_alns_to_directory(output_df, output_directory = output_path)
+        modules.file_io.write_alns_to_directory(output_df, output_directory = f"{output_path}/")
     elif output_type == "t": # TSV
         modules.file_io.write_tsv(output_df)
     else:
         raise ValueError("Invalid output type entered.")
     
     end_time = round(time.perf_counter(), 4)
-    runtime = start_time - end_time
+    runtime = round(end_time - start_time, 4)
     if print_flag: print(f"Program Completed. Exiting with Total Runtime of {runtime} seconds.")
 
     return 

@@ -27,9 +27,10 @@ def read_fasta(fasta_file):
     '''Extracts name and sequence information from FASTA file, building a DataFrame.'''
     data = []
     for record in SeqIO.parse(fasta_file, "fasta"):
+        entry = os.path.splitext(os.path.basename(fasta_file))[0]
         name = record.id
         sequence = str(record.seq)
-        data.append({"Entry Name":name, "Sequence":sequence})
+        data.append({"Entry":entry, "Entry Name":name, "Sequence":sequence})
     df = pd.DataFrame(data)
     return df
 
@@ -41,9 +42,10 @@ def read_directory_fastas(directory):
             file_path = os.path.join(directory, file)
             try:
                 for record in SeqIO.parse(file_path, "fasta"):
+                    entry = os.path.splitext(os.path.basename(file_path))[0]
                     name = record.id
                     sequence = str(record.seq)
-                    data.append({"Entry Name":name, "Sequence":sequence})
+                    data.append({"Entry":entry, "Entry Name":name, "Sequence":sequence})
             except Exception as e:
                 # print(f"Error processing {file}:{e}")
                 continue # skips
@@ -56,8 +58,8 @@ def read_csv_tsv(file_path):
     if file_path.endswith(".tsv"): # switches to tab for TSV files
         delimiter = "\t"
 
-    df = pd.read_csv(file_path, sep = delimiter, header = 0, usecols = [0, 1]) # header = 0 skips first row, assumes cols 0 and 1 have info
-    df.columns = ["Entry Name", "Sequence"] # renames columns
+    df = pd.read_csv(file_path, sep = delimiter, header = 0, usecols = [0, 1, 2]) # header = 0 skips first row, assumes cols 0 and 1 have info
+    df.columns = ["Entry", "Entry Name", "Sequence"] # renames columns
     return df
 
 def validate_input_df(df):
@@ -77,15 +79,16 @@ def validate_input_df(df):
     
 # OUTPUT FUNCTIONS
 
-def write_fasta(name, sequence, break_indexes = [], description = "", output_name = "output.fasta"):
+def write_fasta(name, sequence, break_indexes = [], desc = "", output_name = "output.fasta"):
     '''Writes a single FASTA file based on input of name and sequence. Uses special line breaks to show repeats.'''
     if not break_indexes: # normal fasta schema
-        seq_record = SeqRecord(Seq(sequence), id = name, description = description)
+        seq_record = SeqRecord(Seq(sequence), id = name, description = desc)
         with open(output_name, "w") as fasta_file:
             SeqIO.write(seq_record, fasta_file, "fasta")
     else: # special line breaks
+        break_indexes = [x - 1 for x in break_indexes]
         with open(output_name, "w") as fasta_file:
-            fasta_file.write(f">{name} \n")
+            fasta_file.write(f">{name}{desc}\n")
             start = 0
             for idx in break_indexes:
                 if start >= len(sequence):
@@ -96,8 +99,6 @@ def write_fasta(name, sequence, break_indexes = [], description = "", output_nam
             if start < len(sequence):
                 fasta_file.write(sequence[start:])
     return 0
-
-
 
 def write_aln(name1, name2, seq1, seq2, break_indexes = [], output_name = "output.aln"):
     '''Writes a single ALN file based on input of 2 names and sequences.'''
@@ -115,6 +116,8 @@ def write_aln(name1, name2, seq1, seq2, break_indexes = [], output_name = "outpu
     if not break_indexes:
         increment = 60
         break_indexes = list(range(60, total_length + increment, increment))
+    else:
+        break_indexes = [x - 1 for x in break_indexes]
 
     with open(output_name, "w") as file:
         # header
@@ -143,9 +146,9 @@ def write_fastas_to_directory(output_df, output_directory = ""):
         os.makedirs(output_directory) # makes directory if it doesn't exist
 
     for _, row in output_df.iterrows():
-        name, sequence = row["Entry Name"], row["Sequence"]
+        entry, name, sequence = row["Entry"], row["Entry Name"], row["Sequence"]
         description = f" | {row["Number of Repeats"]} Repeats Found | Residues {row["Start"]} to {row["End"]}"
-        write_fasta(name, sequence, row["Repeat Locations"], description, output_name = f"{output_directory}/{name}_output.fasta")
+        write_fasta(name, sequence, row["Repeat Locations"], desc = description, output_name = f"{output_directory}{entry}_output.fasta")
     return
 
 def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
@@ -153,12 +156,13 @@ def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
     if output_directory and not os.path.exists(output_directory):
         os.makedirs(output_directory) # makes directory if it doesn't exist
     amino_df = amino_df.rename(columns = {"Sequence":"Amino Sequence"})
+    amino_df = amino_df.remove(columns = {"Entry Name"})
     embed_df = embed_df.rename(columns = {"Sequence":"Embed Sequence"})
-    combined_df = amino_df.merge(embed_df, on = "Entry Name", how = "outer") # renames columns and combines based on Entry Name
+    combined_df = amino_df.merge(embed_df, on = "Entry", how = "outer") # renames columns and combines based on Entry Name
 
     for _, row in combined_df.iterrows():
-        name, amino_sequence, embed_sequence, break_indexes = row["Entry Name"], row["Amino Sequence"], row["Embed Sequence"], row["Repeat Locations"]
-        write_aln(f"{name}_AMINO", f"{name}_EMBED", amino_sequence, embed_sequence, break_indexes, output_name = f"{output_directory}/{name}_output.aln")
+        entry, name, amino_sequence, embed_sequence, break_indexes = row["Entry"], row["Entry Name"], row["Amino Sequence"], row["Embed Sequence"], row["Repeat Locations"]
+        write_aln(f"{name}_AMINO", f"{name}_EMBED", amino_sequence, embed_sequence, break_indexes, output_name = f"{output_directory}/{entry}_output.aln")
     return
 
 def write_tsv(output_df, output_name = "output.tsv"):
