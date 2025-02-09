@@ -36,8 +36,9 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     
     # check input and output_type
     modules.file_io.validate_input_df(input_df) # checks df for columns and non-empty
+    print(input_df)
     if print_flag: print(f"Successfully inputted query of {len(input_df)} proteins.\n")
-    # if print_flag: print(input_df + "\n")
+    if print_flag: print(input_df + "\n")
 
     # extract clustering information from HDF file and build FAISS index
     aggregated_embeddings, cluster_labels, _, indicative_pattern, _ = modules.cluster_mapping.unpack_hdf(hdf_file)

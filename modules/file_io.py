@@ -58,9 +58,15 @@ def read_csv_tsv(file_path):
     if file_path.endswith(".tsv"): # switches to tab for TSV files
         delimiter = "\t"
 
-    df = pd.read_csv(file_path, sep = delimiter, header = 0, usecols = [0, 1, 2]) # header = 0 skips first row, assumes cols 0 and 1 have info
-    df.columns = ["Entry", "Entry Name", "Sequence"] # renames columns
-    return df
+    df = pd.read_csv(file_path, sep = delimiter, header = 0) # header = 0 skips first row
+    actual_columns = set(df.columns)
+
+    # Check if all specified columns exist
+    required_columns = ["Entry", "Entry Name", "Sequence"]
+    if all(col in actual_columns for col in required_columns):
+        return df[required_columns]  # Use specified columns
+    else:
+        return df.iloc[:, :3]  # Select first 3 columns by index
 
 def validate_input_df(df):
     '''Checks the input DataFrame, making sure it has rows and contains a columns for Entry Name and Sequence.'''
