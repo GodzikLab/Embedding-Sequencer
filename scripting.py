@@ -36,7 +36,6 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     
     # check input and output_type
     modules.file_io.validate_input_df(input_df) # checks df for columns and non-empty
-    print(input_df)
     if print_flag: print(f"Successfully inputted query of {len(input_df)} proteins.\n")
     if print_flag: print(input_df + "\n")
 
@@ -99,7 +98,7 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     if output_type == "f": # FASTA
         modules.file_io.write_fastas_to_directory(output_df, output_directory = f"{output_path}/")
     elif output_type == "a": # ALN
-        modules.file_io.write_alns_to_directory(output_df, output_directory = f"{output_path}/")
+        modules.file_io.write_alns_to_directory(input_df, output_df, output_directory = f"{output_path}/")
     elif output_type == "t": # TSV
         modules.file_io.write_tsv(output_df, output_directory = f"{output_path}/")
     else:

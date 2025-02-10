@@ -162,7 +162,7 @@ def write_alns_to_directory(amino_df, embed_df, output_directory = ""):
     if output_directory and not os.path.exists(output_directory):
         os.makedirs(output_directory) # makes directory if it doesn't exist
     amino_df = amino_df.rename(columns = {"Sequence":"Amino Sequence"})
-    amino_df = amino_df.remove(columns = {"Entry Name"})
+    amino_df = amino_df.drop(columns = {"Entry Name"}, axis = 1)
     embed_df = embed_df.rename(columns = {"Sequence":"Embed Sequence"})
     combined_df = amino_df.merge(embed_df, on = "Entry", how = "outer") # renames columns and combines based on Entry Name
 
