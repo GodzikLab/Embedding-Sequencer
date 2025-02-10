@@ -159,3 +159,4 @@ file_output/*.fasta
 file_output/*.aln
 file_output/*.tsv
 file_input/*.tsv
+!file_input/example.tsv

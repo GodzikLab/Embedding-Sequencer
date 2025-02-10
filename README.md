@@ -2,7 +2,7 @@
  
 ## Overview
 
-This script uses the clustering of  protein language model embeddings to generate alternative cluster-label sequences that better reflect the protein's biological features. In theory, these sequences can be used to rapidly identify structural repeats and other protein domains.
+This script uses the clustering of  protein language model embeddings to generate sequences that use a cluster-based alphabet to better reflect the protein's biological features. These sequences can be used to rapidly identify structural repeats and other protein domains by identifying patterns present in protein language models. 
 
 We are currently using the **ESM-2 35M model.**
 
@@ -11,27 +11,22 @@ We are currently using the **ESM-2 35M model.**
 ### Recommended Initial Usage:
 
 ```
-python sequencer.py -f 20241205_hTLR_pool.hdf fasta_input/Q6PEZ8.fasta fasta_output/Q6PEZ8_output.fasta
+python main.py file_input/Q6PEZ8.fasta -f -p
+```
+OR
+```
+python main.py file_input/example.tsv -t -p
 ```
 
-The script takes 3 inputs and has 3 optional flags to be used like so:
+The script has 2 mandatory parameters: the input and the output type (selected by a flag)
 ```
-sequencer.py pool.hdf input.fasta output.fasta
+sequencer.py input -output_flag
 ```
 ```
-sequencer.py -a -f -p pool.hdf input.fasta output.fasta
+main.py [-h] (-f | -a | -t) [--hdf HDF] [--output OUTPUT] [-p] input_path
 ```
-
-Included Components:
-* environment.yaml / requirements.txt - Either can be used for setting up the virtual environment.
-
-* HDF file(s) - Inputs the <ins>clustering pool</ins> data to be used.
-
-* fasta_input & fasta_output folders - For organizational use.
-
-* sequencer.py script
-
-* run_sequencer.sh / run_finder.sh bash script - Used to run the Python script on every file in the fasta_input folder
+* Enter an input as a FASTA, directory of FASTAs, or CSV/TSV file. 
+* Choose output type (f - FASTA, a - ALN, t - TSV) and whether or not to show print statements (-p)
 
 ## Key Components / Explanation
 
@@ -39,17 +34,11 @@ Included Components:
 
 In order to cluster the embeddings into letters, the method uses a <ins>clustering pool</ins> of preselected proteins with locations of interest. The embeddings of the pool are clustered into letters, optimized to identify a repeating pattern at each of the locations of interest.
 
-For example, the hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the cluster-label sequence. The embeddings, clustering information, and pattern is stored in the HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
+For example, the default hTLR pool is optimized to find leucine-rich repeats. It has 7 letters/clusters and uses the 'FEDED' pattern to identify repeats in the cluster-label sequence. The embeddings, clustering information, and pattern is stored in the HDF file to avoid reclustering the pool for each instance of use and to maintain consistency across the letters.
 
-### The Align Flag (-a)
+### False Positive Avoidance
 
-This flag will cause the program to output both the original and cluster-label sequence together as a Clustal aln file. This flag can be used in conjunction with the Find Flag mentioned below.
-
-### The Find Flag (-f)
-
-As mentioned, the script can find locations of interests in the protein sequence using the pattern defined in the HDF file. The pattern search function is disabled by default and uses the '-f' find flag to be activated. The output of the FASTA file contains line breaks to reflect where the pattern was found and adds text in the gene description expressing how many were found. 
-
-In the current iteration, the program will discard found patterns if it fails to find more than 2 and will additionally make an attempt to find the initial segment, which generally tends to have a slightly different cluster-label pattern. 
+The current iteration of the project uses only identifies Leucine-Rich Repeats if there are more than 2 instances of the repeating pattern. If there are only 2 instances, none of the repeats will be highlighted and the protein will be determined as a "non-repeat."
 
 ### The Print Flag (-p)
 
