@@ -155,5 +155,8 @@ cython_debug/
 .DS_store
 
 # output files
-fasta_output/*.fasta
-fasta_output/*.aln
+file_output/*.fasta
+file_output/*.aln
+file_output/*.tsv
+file_input/*.tsv
+!file_input/example.tsv
