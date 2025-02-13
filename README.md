@@ -23,7 +23,7 @@ The script has 2 mandatory parameters: the input and the output type (selected b
 sequencer.py input -output_flag
 ```
 ```
-main.py [-h] (-f | -a | -t) [--hdf HDF] [--output OUTPUT] [-p] input_path
+main.py [-h] input_path (-f | -a | -t) [--hdf HDF] [--output OUTPUT] [-p]
 ```
 * Enter an input as a FASTA, directory of FASTAs, or CSV/TSV file. 
 * Choose output type (f - FASTA, a - ALN, t - TSV) and whether or not to show print statements (-p)
