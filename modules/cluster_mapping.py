@@ -12,14 +12,24 @@ def unpack_hdf(hdf_file):
     '''
     with h5py.File(hdf_file, 'r') as f:
         aggregated_embeddings = f['embeddings'][:]
+        pca_components = f['pca_components'][:]
+        pca_mean = f['pca_mean'][:]
+        pca_variance = f['pca_variance'][()]
         cluster_labels = f['labels'][:]
         pool_proteins_list = f['proteins_list'][:]
         indicative_pattern = f['pattern'][()].decode('utf-8')
         pattern_percentage = f['pattern_percentage'][()]
+        model_version = f['model_version'][()].decode('utf-8')
     pattern_percentage = round(pattern_percentage, 3)
 
     if not isinstance(aggregated_embeddings, np.ndarray) or aggregated_embeddings.dtype != np.float32 or aggregated_embeddings.ndim != 2:
         raise ValueError("Error with 'embeddings' data in HDF file. Check data type and dimensions.")
+    if not isinstance(pca_components, np.ndarray) or pca_components.dtype != np.float32 or pca_components.ndim != 2:
+        raise ValueError("Error with 'pca_components' data in HDF file. Check data type and dimensions.")
+    if not isinstance(pca_mean, np.ndarray) or pca_mean.dtype != np.float32 or pca_mean.ndim != 1:
+        raise ValueError("Error with 'pca_mean' data in HDF file. Check data type and dimensions.")
+    if not isinstance(pca_variance, float):
+        raise ValueError("Error with 'pca_variance' data in HDF file. Check data type and values.")
     if not isinstance(cluster_labels, np.ndarray) or cluster_labels.dtype != np.int32 or cluster_labels.ndim != 1:
         raise ValueError("Error with 'labels' data in HDF file. Check data type and dimensions.")
     if not isinstance(pool_proteins_list, np.ndarray) or pool_proteins_list.dtype != np.object_ or pool_proteins_list.ndim != 1:
@@ -28,8 +38,10 @@ def unpack_hdf(hdf_file):
         raise ValueError("Error with 'pattern' data in HDF file. Check data type.")
     if not isinstance(pattern_percentage, float):
         raise ValueError("Error with 'pattern_percentage' data in HDF file. Check data type.")
+    if not isinstance(model_version, str):
+        raise ValueError("Error with 'model_version' data in HDF file. Check data type.")
 
-    return aggregated_embeddings, cluster_labels, pool_proteins_list, indicative_pattern, pattern_percentage
+    return aggregated_embeddings, pca_components, pca_mean, pca_variance, cluster_labels, pool_proteins_list, indicative_pattern, pattern_percentage, model_version
 
 def build_faiss_index(aggregated_embeddings):
     ''' Takes an input of aggregated embeddings to build a FAISS index for rapid approximate nearest neighbor search.'''
