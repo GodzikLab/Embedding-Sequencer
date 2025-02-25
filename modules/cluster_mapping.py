@@ -58,6 +58,8 @@ def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_ne
     '''Builds the cluster-label sequence for the query embedding and highlighting outliers.'''
     query_sequence = ""
     outlier_dict = {}
+    base_string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
     # iterates through similar vectors
     for i in range(len(faiss_similarity)):
         label_weights = {}
@@ -66,7 +68,10 @@ def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_ne
             label_weights[label] = label_weights.get(label,0) + sim # adds voting weight based on similarity score
         majority_label = max(label_weights, key = label_weights.get)
         majority_weight = label_weights[majority_label]
-        query_sequence += chr(ord('A') + majority_label)
+        if majority_label >= len(base_string):
+            query_sequence += "_"
+        else: 
+            query_sequence += base_string[majority_label]
         if majority_weight < (num_neighbors * bad_similarity_standard): # 0.3 is definition of 'bad similarity' for normalized vector comparisons
             outlier_dict[i] = majority_weight
     return query_sequence, outlier_dict
