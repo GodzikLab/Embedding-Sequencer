@@ -1,0 +1,6 @@
+# TODO List
+
+- [] New PCA Function: add function to import dimensionality reduction features
+- [] Scripting Pipeline (PCA): adjust scripting pipeline to implement new PCA functionality
+- [] New Clustering Options: add clustering models for Prot & ESM 650M 
+- [] Scripting Pipeline (Clustering): adjust scripting pipeline to implement new clustering options
