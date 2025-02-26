@@ -71,7 +71,7 @@ def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_ne
             label_weights[label] = label_weights.get(label,0) + sim # adds voting weight based on similarity score
         majority_label = max(label_weights, key = label_weights.get)
         majority_weight = label_weights[majority_label]
-        if majority_label >= len(base_string):
+        if majority_label >= len(base_string) or majority_label < 0:
             query_sequence += "_"
         else: 
             query_sequence += base_string[majority_label]
