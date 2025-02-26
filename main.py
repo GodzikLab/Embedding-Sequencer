@@ -20,7 +20,7 @@ def parse_arguments():
     output_group.add_argument("-t", "--tsv", action="store_const", const="t", help="Output in TSV format")
 
     parser.add_argument("input_path", type=str, help="Path to the input file or directory")
-    parser.add_argument("--hdf", type=str, default="20241205_hTLR_pool.hdf", help="Path to the HDF file used for clustering mapping (default: 20241205_hTLR_pool.hdf)")
+    parser.add_argument("--hdf", type=str, default="hdf/ESM_35M_SPECTRAL_6.hdf", help="Path to the HDF file used for clustering mapping (default: 20241205_hTLR_pool.hdf)")
     parser.add_argument("--output", type=str, default="file_output", help="Custom output file name (default: auto-generated)")
 
     parser.add_argument("-p", "--print_flag", action="store_true", help="Print output to console")
