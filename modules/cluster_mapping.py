@@ -17,7 +17,7 @@ def unpack_hdf(hdf_file):
         pca_mean = f['pca_mean'][:]
         pca_variance = f['pca_variance'][()]
         cluster_labels = f['labels'][:]
-        pool_proteins_list = f['proteins_list'][:]
+        pool_proteins_list = f['pool_list'][:]
         indicative_pattern = f['pattern'][()].decode('utf-8')
         pattern_percentage = f['pattern_percentage'][()]
         model_version = f['model_version'][()].decode('utf-8')
@@ -89,9 +89,10 @@ def apply_pca(query_embeddings, saved_pca):
     '''Applies PCA dimensionality reduction to the query embeddings based on the saved PCA components.'''
     pca_components, pca_mean, pca_variance = saved_pca
 
-    pca = PCA(n_components = pca_variance, random_state = 12)
+    pca = PCA(random_state = 12)
     pca.components_ = pca_components
     pca.mean_ = pca_mean
+    pca.explained_variance_ = pca_variance
 
     reduced_embeddings = pca.transform(query_embeddings)
 
