@@ -63,7 +63,7 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
 
         # apply PCA dimensionality reduction
         query_embeddings = modules.cluster_mapping.apply_pca(query_embeddings, saved_pca)
-        if print_flag: print(f"   {name} - {query_embeddings.shape}")
+        # if print_flag: print(f"   {name} - {query_embeddings.shape}")
 
         # perform ANN with N neighbors
         faiss_similarity, faiss_indices = modules.cluster_mapping.search_faiss_index(query_embeddings, faiss_index, num_neighbors = num_neighbors)
@@ -72,7 +72,7 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
         query_sequence, outlier_dict = modules.cluster_mapping.build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_neighbors = num_neighbors)
 
         # calculate outlier percentage
-        sequence_confidence = modules.cluster_mapping.calculate_confidence(outlier_dict, faiss_similarity)
+        # sequence_confidence = modules.cluster_mapping.calculate_confidence(outlier_dict, faiss_similarity)
         # if print_flag: print(f"   {name} - {len(outlier_dict)} outliers with {sequence_confidence}% confidence.")
 
         # find repeat locations
@@ -87,7 +87,7 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
             "Entry" : entry,
             "Entry Name" : name,
             "Sequence" : query_sequence,
-            "Sequence Confidence" : sequence_confidence,
+            # "Sequence Confidence" : sequence_confidence,
             "Repeat Locations" : [x + 1 for x in pattern_indexes], # indexes to residue count
             "Number of Repeats" : len(pattern_indexes),
             "Start" : start_pos,
