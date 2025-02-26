@@ -40,7 +40,7 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     if print_flag: print(input_df + "\n")
 
     # extract clustering information from HDF file and build FAISS index
-    aggregated_embeddings, cluster_labels, _, indicative_pattern, _ = modules.cluster_mapping.unpack_hdf(hdf_file)
+    aggregated_embeddings, saved_pca, cluster_labels, _, indicative_pattern, _ = modules.cluster_mapping.unpack_hdf(hdf_file)
     faiss_index = modules.cluster_mapping.build_faiss_index(aggregated_embeddings)
     if print_flag: print(f"Unpacked clustering information from {hdf_file} and built FAISS index.")
 
@@ -59,6 +59,9 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
 
         # generate embeddings
         query_embeddings = modules.embedding_generation.generate_embeddings(sequence, model, batch_converter)
+
+        # apply PCA dimensionality reduction
+        query_embeddings = modules.cluster_mapping.apply_pca(query_embeddings, saved_pca)
 
         # perform ANN with N neighbors
         faiss_similarity, faiss_indices = modules.cluster_mapping.search_faiss_index(query_embeddings, faiss_index, num_neighbors = num_neighbors)

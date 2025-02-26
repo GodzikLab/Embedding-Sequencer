@@ -4,6 +4,7 @@ import numpy as np
 
 import h5py
 import faiss
+from sklearn.decomposition import PCA
 
 def unpack_hdf(hdf_file):
     '''Extracts the information of an inputted HDF file and checks their correctness.
@@ -41,7 +42,9 @@ def unpack_hdf(hdf_file):
     if not isinstance(model_version, str):
         raise ValueError("Error with 'model_version' data in HDF file. Check data type.")
 
-    return aggregated_embeddings, pca_components, pca_mean, pca_variance, cluster_labels, pool_proteins_list, indicative_pattern, pattern_percentage, model_version
+    saved_pca = [pca_components, pca_mean, pca_variance]
+    
+    return aggregated_embeddings, saved_pca, cluster_labels, pool_proteins_list, indicative_pattern, pattern_percentage, model_version
 
 def build_faiss_index(aggregated_embeddings):
     ''' Takes an input of aggregated embeddings to build a FAISS index for rapid approximate nearest neighbor search.'''
@@ -81,3 +84,15 @@ def calculate_confidence(outlier_dict, faiss_similarity):
     outlier_percentage = round((len(outlier_dict) / len(faiss_similarity)) * 100, 3)
     sequence_confidence = round(100 - outlier_percentage, 3)
     return sequence_confidence
+
+def apply_pca(query_embeddings, saved_pca):
+    '''Applies PCA dimensionality reduction to the query embeddings based on the saved PCA components.'''
+    pca_components, pca_mean, pca_variance = saved_pca
+
+    pca = PCA(n_components = pca_variance, random_state = 12)
+    pca.components_ = pca_components
+    pca.mean_ = pca_mean
+
+    reduced_embeddings = pca.transform(query_embeddings)
+
+    return reduced_embeddings
