@@ -46,7 +46,7 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
     if print_flag: print(f"Unpacked clustering information from {hdf_file} and built FAISS index.")
 
     # establish/download model
-    model, batch_converter = modules.embedding_generation.download_model()
+    model, converter_or_tokenizer = modules.embedding_generation.download_model(version = model_version)
     if print_flag: print("Finished downloading and setting up protein language model.\n")
 
     # start output list
@@ -59,7 +59,7 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
         entry, name, sequence = row["Entry"], row["Entry Name"], row["Sequence"]
 
         # generate embeddings
-        query_embeddings = modules.embedding_generation.generate_embeddings(sequence, model, batch_converter)
+        query_embeddings = modules.embedding_generation.generate_embeddings(sequence, model, converter_or_tokenizer, version = model_version)
 
         # apply PCA dimensionality reduction
         query_embeddings = modules.cluster_mapping.apply_pca(query_embeddings, saved_pca)
