@@ -24,6 +24,8 @@ def generate_embeddings(sequence, model, converter_or_tokenizer, version):
     if version.startswith("esm"):
         return generate_esm_embeddings(sequence, model, converter_or_tokenizer)
     else:
+        # print(f"Length of sequence: {len(sequence)}")
+        sequence = add_sequence_spacing(sequence)
         return generate_prot_embeddings(sequence, model, converter_or_tokenizer)
 
 # EMBEDDING GENERATION
@@ -34,7 +36,7 @@ def add_sequence_spacing(sequence):
 
 def download_prot_model(version = "Rostlab/prot_t5_xl_uniref50"):
     '''Downloads and sets up the Prot model and tokenizer of the protein language model being used.'''
-    tokenizer = T5Tokenizer.from_pretrained(version, do_lower_case = False)
+    tokenizer = T5Tokenizer.from_pretrained(version, do_lower_case = False, legacy = True)
     model = T5EncoderModel.from_pretrained(version)
     model.eval()
     return model, tokenizer
@@ -46,8 +48,10 @@ def generate_prot_embeddings(sequence, model, tokenizer):
 
     with torch.no_grad():
         outputs = model(**encodings)
-        embeddings = outputs.last_hidden_state[:, 2:-1, :] # removes the unk & start/end tokens
-
+        embeddings = outputs.last_hidden_state[:, 0:-1, :].squeeze(0) # removes end tokens
+        embeddings = normalize(embeddings) 
+        embeddings = embeddings.astype(np.float32)
+    # print(embeddings.shape)
     return embeddings
 
 def download_esm_model(version = "esm2_t12_35M_UR50D"):
