@@ -4,6 +4,7 @@ import numpy as np
 
 import h5py
 import faiss
+from sklearn.decomposition import PCA
 
 def unpack_hdf(hdf_file):
     '''Extracts the information of an inputted HDF file and checks their correctness.
@@ -12,14 +13,24 @@ def unpack_hdf(hdf_file):
     '''
     with h5py.File(hdf_file, 'r') as f:
         aggregated_embeddings = f['embeddings'][:]
+        pca_components = f['pca_components'][:]
+        pca_mean = f['pca_mean'][:]
+        pca_variance = f['pca_variance'][()]
         cluster_labels = f['labels'][:]
-        pool_proteins_list = f['proteins_list'][:]
+        pool_proteins_list = f['pool_list'][:]
         indicative_pattern = f['pattern'][()].decode('utf-8')
         pattern_percentage = f['pattern_percentage'][()]
+        model_version = f['model_version'][()].decode('utf-8')
     pattern_percentage = round(pattern_percentage, 3)
 
     if not isinstance(aggregated_embeddings, np.ndarray) or aggregated_embeddings.dtype != np.float32 or aggregated_embeddings.ndim != 2:
         raise ValueError("Error with 'embeddings' data in HDF file. Check data type and dimensions.")
+    if not isinstance(pca_components, np.ndarray) or pca_components.dtype != np.float32 or pca_components.ndim != 2:
+        raise ValueError("Error with 'pca_components' data in HDF file. Check data type and dimensions.")
+    if not isinstance(pca_mean, np.ndarray) or pca_mean.dtype != np.float32 or pca_mean.ndim != 1:
+        raise ValueError("Error with 'pca_mean' data in HDF file. Check data type and dimensions.")
+    if not isinstance(pca_variance, float):
+        raise ValueError("Error with 'pca_variance' data in HDF file. Check data type and values.")
     if not isinstance(cluster_labels, np.ndarray) or cluster_labels.dtype != np.int32 or cluster_labels.ndim != 1:
         raise ValueError("Error with 'labels' data in HDF file. Check data type and dimensions.")
     if not isinstance(pool_proteins_list, np.ndarray) or pool_proteins_list.dtype != np.object_ or pool_proteins_list.ndim != 1:
@@ -28,8 +39,12 @@ def unpack_hdf(hdf_file):
         raise ValueError("Error with 'pattern' data in HDF file. Check data type.")
     if not isinstance(pattern_percentage, float):
         raise ValueError("Error with 'pattern_percentage' data in HDF file. Check data type.")
+    if not isinstance(model_version, str):
+        raise ValueError("Error with 'model_version' data in HDF file. Check data type.")
 
-    return aggregated_embeddings, cluster_labels, pool_proteins_list, indicative_pattern, pattern_percentage
+    saved_pca = [pca_components, pca_mean, pca_variance]
+    
+    return aggregated_embeddings, saved_pca, cluster_labels, pool_proteins_list, indicative_pattern, pattern_percentage, model_version
 
 def build_faiss_index(aggregated_embeddings):
     ''' Takes an input of aggregated embeddings to build a FAISS index for rapid approximate nearest neighbor search.'''
@@ -46,6 +61,8 @@ def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_ne
     '''Builds the cluster-label sequence for the query embedding and highlighting outliers.'''
     query_sequence = ""
     outlier_dict = {}
+    base_string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
     # iterates through similar vectors
     for i in range(len(faiss_similarity)):
         label_weights = {}
@@ -54,7 +71,10 @@ def build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_ne
             label_weights[label] = label_weights.get(label,0) + sim # adds voting weight based on similarity score
         majority_label = max(label_weights, key = label_weights.get)
         majority_weight = label_weights[majority_label]
-        query_sequence += chr(ord('A') + majority_label)
+        if majority_label >= len(base_string) or majority_label < 0:
+            query_sequence += "_"
+        else: 
+            query_sequence += base_string[majority_label]
         if majority_weight < (num_neighbors * bad_similarity_standard): # 0.3 is definition of 'bad similarity' for normalized vector comparisons
             outlier_dict[i] = majority_weight
     return query_sequence, outlier_dict
@@ -64,3 +84,16 @@ def calculate_confidence(outlier_dict, faiss_similarity):
     outlier_percentage = round((len(outlier_dict) / len(faiss_similarity)) * 100, 3)
     sequence_confidence = round(100 - outlier_percentage, 3)
     return sequence_confidence
+
+def apply_pca(query_embeddings, saved_pca):
+    '''Applies PCA dimensionality reduction to the query embeddings based on the saved PCA components.'''
+    pca_components, pca_mean, pca_variance = saved_pca
+
+    pca = PCA(random_state = 12)
+    pca.components_ = pca_components
+    pca.mean_ = pca_mean
+    pca.explained_variance_ = pca_variance
+
+    reduced_embeddings = pca.transform(query_embeddings)
+
+    return reduced_embeddings

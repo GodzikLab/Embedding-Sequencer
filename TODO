@@ -1,0 +1,8 @@
+# TODO List
+
+- [X] Adjust Alphabet: Use string for alphabet system.
+- [X] New PCA Function: add function to import dimensionality reduction features
+- [X] Scripting Pipeline (PCA): adjust scripting pipeline to implement new PCA functionality
+- [X] New Clustering Options: add clustering models for Prot & ESM 650M 
+- [X] Scripting Pipeline (Clustering): adjust scripting pipeline to implement new model options
+- [X] Remove sequence confidence metric

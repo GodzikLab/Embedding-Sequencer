@@ -8,7 +8,7 @@ import time
 import pandas as pd
 import os
 
-def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = "f", print_flag = False, output_path = "fasta_output"):
+def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = False, output_path = "fasta_output"):
     '''Manages the scripting of actions for the embedding sequencer pipeline.
     
     Parameters:
@@ -40,12 +40,13 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
     if print_flag: print(input_df + "\n")
 
     # extract clustering information from HDF file and build FAISS index
-    aggregated_embeddings, cluster_labels, _, indicative_pattern, _ = modules.cluster_mapping.unpack_hdf(hdf_file)
+    aggregated_embeddings, saved_pca, cluster_labels, _, indicative_pattern, _, model_version = modules.cluster_mapping.unpack_hdf(hdf_file)
+    if print_flag: print(f"Shape of Embeddings: {aggregated_embeddings.shape}")
     faiss_index = modules.cluster_mapping.build_faiss_index(aggregated_embeddings)
     if print_flag: print(f"Unpacked clustering information from {hdf_file} and built FAISS index.")
 
     # establish/download model
-    model, batch_converter = modules.embedding_generation.download_model()
+    model, converter_or_tokenizer = modules.embedding_generation.download_model(version = model_version)
     if print_flag: print("Finished downloading and setting up protein language model.\n")
 
     # start output list
@@ -58,7 +59,11 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
         entry, name, sequence = row["Entry"], row["Entry Name"], row["Sequence"]
 
         # generate embeddings
-        query_embeddings = modules.embedding_generation.generate_embeddings(sequence, model, batch_converter)
+        query_embeddings = modules.embedding_generation.generate_embeddings(sequence, model, converter_or_tokenizer, version = model_version)
+
+        # apply PCA dimensionality reduction
+        query_embeddings = modules.cluster_mapping.apply_pca(query_embeddings, saved_pca)
+        # if print_flag: print(f"   {name} - {query_embeddings.shape}")
 
         # perform ANN with N neighbors
         faiss_similarity, faiss_indices = modules.cluster_mapping.search_faiss_index(query_embeddings, faiss_index, num_neighbors = num_neighbors)
@@ -67,7 +72,8 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
         query_sequence, outlier_dict = modules.cluster_mapping.build_faiss_sequence(faiss_similarity, faiss_indices, cluster_labels, num_neighbors = num_neighbors)
 
         # calculate outlier percentage
-        sequence_confidence = modules.cluster_mapping.calculate_confidence(outlier_dict, faiss_similarity)
+        # sequence_confidence = modules.cluster_mapping.calculate_confidence(outlier_dict, faiss_similarity)
+        # if print_flag: print(f"   {name} - {len(outlier_dict)} outliers with {sequence_confidence}% confidence.")
 
         # find repeat locations
         pattern_indexes = modules.embedding_generation.find_pattern(query_sequence, indicative_pattern)
@@ -81,7 +87,7 @@ def run_pipeline(input_path, hdf_file = "20241205_hTLR_pool.hdf", output_type = 
             "Entry" : entry,
             "Entry Name" : name,
             "Sequence" : query_sequence,
-            "Sequence Confidence" : sequence_confidence,
+            # "Sequence Confidence" : sequence_confidence,
             "Repeat Locations" : [x + 1 for x in pattern_indexes], # indexes to residue count
             "Number of Repeats" : len(pattern_indexes),
             "Start" : start_pos,
