@@ -82,12 +82,16 @@ def find_pattern(query_sequence, indicative_pattern):
 
     # regex search expression to find matches
     pattern_indexes = [match.start() + shift for match in re.finditer(f'(?={indicative_pattern})', query_sequence)]
-    # checks for missed initial fragments if other patterns were found
-    if len(pattern_indexes) >= 2:
+    # checks for missed initial fragments if 2 or more patterns were found
+    if len(pattern_indexes) >= 2: # searches for a shorter pattern LxL
         first_index = [match.start() for match in re.finditer(f'(?={indicative_pattern[shift:]})', query_sequence[:pattern_indexes[0]])]
         if first_index: pattern_indexes.insert(0, first_index[0])
-        elif pattern_indexes[0] > 35:
-            pattern_indexes.insert(0, pattern_indexes[0] - pattern_indexes[1] + pattern_indexes[0])
+        elif pattern_indexes[0] > 35: # if there is no match, settle for first character L
+            search_position = pattern_indexes[0] - 30
+            first_index = [match.start() for match in re.finditer(f'(?={indicative_pattern[shift:shift+1]})', query_sequence[search_position:pattern_indexes[0]])]
+            if first_index: 
+                pattern_indexes.insert(0, first_index[0] + search_position)
+                print(f"Found a match for the first character of the pattern at index {first_index[0] + search_position} in the sequence.")
     else:
         pattern_indexes = [] # empties if less than 2 patterns were found / a false positive
 
