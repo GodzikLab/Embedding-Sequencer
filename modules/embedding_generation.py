@@ -86,9 +86,32 @@ def find_pattern(query_sequence, indicative_pattern):
     if len(pattern_indexes) >= 2:
         first_index = [match.start() for match in re.finditer(f'(?={indicative_pattern[shift:]})', query_sequence[:pattern_indexes[0]])]
         if first_index: pattern_indexes.insert(0, first_index[0])
-        elif pattern_indexes[0] > 35:
-            pattern_indexes.insert(0, pattern_indexes[0] - pattern_indexes[1] + pattern_indexes[0])
+        elif pattern_indexes[0] > 35: # if there is no match, settle for first character L
+            search_position = pattern_indexes[0] - 30
+            first_index = [match.start() for match in re.finditer(f'(?={indicative_pattern[shift:shift+1]})', query_sequence[search_position:pattern_indexes[0]])]
+            if first_index: 
+                pattern_indexes.insert(0, first_index[0] + search_position)
+                print(f"Found a match for the first character of the pattern at index {first_index[0] + search_position} in the sequence.")
+        pattern_indexes = remove_isolated_indexes(pattern_indexes, window_size = 60) # removes isolated indexes
     else:
         pattern_indexes = [] # empties if less than 2 patterns were found / a false positive
-
+    
     return pattern_indexes
+
+def remove_isolated_indexes(indexes, window_size = 60):
+    '''Removes isolated indexes from the list of indexes, those that do not 
+    have a neighbor within the window size.'''
+    indexes = sorted(indexes)
+    valid_indexes = []
+    for i in range(0, len(indexes)):
+        if i == 0:
+            if indexes[i + 1] - indexes[i] <= window_size:
+                valid_indexes.append(indexes[i])
+        elif i == len(indexes) - 1:
+            if indexes[i] - indexes[i - 1] <= window_size:
+                valid_indexes.append(indexes[i])
+        else:
+            if indexes[i + 1] - indexes[i] <= window_size or indexes[i] - indexes[i - 1] <= window_size:
+                valid_indexes.append(indexes[i])
+    indexes[:] = valid_indexes
+    return indexes
