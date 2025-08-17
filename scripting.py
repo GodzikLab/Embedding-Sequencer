@@ -61,6 +61,10 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
     for _, row in input_df.iterrows():
         count += 1
         entry, name, sequence = row["Entry"], row["Entry Name"], row["Sequence"]
+        if len(sequence) > 100000:
+            skipped.append(name)
+            if print_flag: print(f" {(count):>{spacing}}" + f" - {name} - Sequence too long, skipping.")
+            continue
 
         # generate embeddings
         query_embeddings = modules.embedding_generation.generate_embeddings(sequence, model, converter_or_tokenizer, version = model_version)
