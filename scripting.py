@@ -55,7 +55,11 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
     if print_flag: print("Generating Embeddings Sequences for Query Proteins...")
 
     # LOOP
+    count = 0
+    spacing = len(str(len(input_df)))
+    skipped = []
     for _, row in input_df.iterrows():
+        count += 1
         entry, name, sequence = row["Entry"], row["Entry Name"], row["Sequence"]
 
         # generate embeddings
@@ -94,8 +98,8 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
             "End" : end_pos
         }
         output_data.append(data_entry)
-        if print_flag: print(f"   {name} - {query_sequence[:50]}")
-    
+        if print_flag: print(f" {(count):>{spacing}}" + f" - {name} - {query_sequence[:50]}...")
+
     output_df = pd.DataFrame(output_data)
     if print_flag: print("Finished Generating Embeddings.\n")
     # if print_flag: print(output_df)
@@ -112,6 +116,8 @@ def run_pipeline(input_path, hdf_file = "", output_type = "f", print_flag = Fals
     
     end_time = round(time.perf_counter(), 4)
     runtime = round(end_time - start_time, 4)
-    if print_flag: print(f"Program Completed. Exiting with Total Runtime of {runtime} seconds.")
+    if print_flag: 
+        print(f"Program Completed. Exiting with Total Runtime of {runtime} seconds.")
+        print(f"Skipped: {skipped}")
 
     return 
